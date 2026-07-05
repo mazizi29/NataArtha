@@ -19,7 +19,7 @@ const AuthStack = () => {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        contentStyle: { backgroundColor: colors.white },
+        contentStyle: { backgroundColor: colors.background },
       }}
     >
       <Stack.Screen name="Login" component={LoginScreen} />
@@ -33,12 +33,16 @@ const AppStack = () => {
     <Stack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: colors.primary,
+          backgroundColor: colors.background,
+          shadowColor: 'transparent',
+          elevation: 0,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
         },
-        headerTintColor: colors.white,
+        headerTintColor: colors.dark,
         headerTitleAlign: 'center',
         headerTitleStyle: {
-          fontWeight: '600',
+          fontWeight: '800',
           fontSize: 16,
         },
         headerBackTitleVisible: false,
@@ -60,7 +64,7 @@ const AppStack = () => {
             fontWeight: '600',
             fontSize: 15,
           },
-          contentStyle: { backgroundColor: colors.white },
+          contentStyle: { backgroundColor: colors.background },
         }}
       />
       <Stack.Screen
@@ -72,7 +76,7 @@ const AppStack = () => {
             fontWeight: '600',
             fontSize: 15,
           },
-          contentStyle: { backgroundColor: colors.white },
+          contentStyle: { backgroundColor: colors.background },
         }}
       />
     </Stack.Navigator>

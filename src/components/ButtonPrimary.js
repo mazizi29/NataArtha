@@ -1,6 +1,18 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { Platform, TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { colors, spacing, borderRadius, fontSizes } from '../styles/globalStyles';
+
+const shadowStyle = Platform.select({
+  web: {
+    boxShadow: '0px 10px 24px rgba(201, 168, 76, 0.20)',
+  },
+  default: {
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.16,
+    shadowRadius: 16,
+  },
+});
 
 const ButtonPrimary = ({
   title,
@@ -27,7 +39,9 @@ const ButtonPrimary = ({
   };
 
   const getVariantTextStyle = () => {
-    return variant === 'secondary' ? styles.buttonSecondaryText : styles.buttonPrimaryText;
+    if (variant === 'secondary') return styles.buttonSecondaryText;
+    if (variant === 'danger' || variant === 'success') return styles.buttonOnColorText;
+    return styles.buttonPrimaryText;
   };
 
   const getSizeStyle = () => {
@@ -49,15 +63,18 @@ const ButtonPrimary = ({
         getSizeStyle(),
         disabled && styles.buttonDisabled,
         fullWidth && styles.buttonFullWidth,
+        !disabled && shadowStyle,
         style,
       ]}
       onPress={onPress}
       disabled={disabled || loading}
-      activeOpacity={0.7}
+      activeOpacity={0.85}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: disabled || loading, busy: loading }}
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === 'secondary' ? colors.primary : colors.white}
+          color={variant === 'primary' ? '#080B14' : variant === 'secondary' ? colors.primary : colors.white}
           size="small"
         />
       ) : (
@@ -69,17 +86,19 @@ const ButtonPrimary = ({
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.full,
     justifyContent: 'center',
     alignItems: 'center',
+    flexDirection: 'row',
+    minHeight: 48,
   },
   buttonPrimary: {
     backgroundColor: colors.primary,
   },
   buttonSecondary: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surfaceAlt,
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: colors.border,
   },
   buttonDanger: {
     backgroundColor: colors.danger,
@@ -88,14 +107,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.success,
   },
   buttonDisabled: {
-    opacity: 0.5,
+    opacity: 0.56,
   },
   buttonSmall: {
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
   },
   buttonMedium: {
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.md + 2,
     paddingHorizontal: spacing.lg,
   },
   buttonLarge: {
@@ -106,14 +125,22 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   buttonPrimaryText: {
-    color: colors.white,
-    fontWeight: '600',
+    color: '#080B14',
+    fontWeight: '800',
     fontSize: fontSizes.base,
+    letterSpacing: 0,
   },
   buttonSecondaryText: {
     color: colors.primary,
-    fontWeight: '600',
+    fontWeight: '800',
     fontSize: fontSizes.base,
+    letterSpacing: 0,
+  },
+  buttonOnColorText: {
+    color: colors.white,
+    fontWeight: '800',
+    fontSize: fontSizes.base,
+    letterSpacing: 0,
   },
 });
 

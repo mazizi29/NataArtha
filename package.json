@@ -10,6 +10,7 @@
     "web": "npx expo start --web"
   },
   "dependencies": {
+    "@expo-google-fonts/dm-sans": "^0.4.2",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/datetimepicker": "8.4.4",
     "@react-navigation/bottom-tabs": "^7.18.2",
@@ -40,7 +41,8 @@
     "@types/react": "~19.1.10",
     "@types/react-native": "~0.71.2",
     "babel-preset-expo": "54.0.10",
-    "pdfkit": "^0.18.0"
+    "pdfkit": "^0.18.0",
+    "typescript": "~5.9.2"
   },
   "private": true
 }

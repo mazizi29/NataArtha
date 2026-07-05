@@ -1,17 +1,17 @@
 import React from 'react';
-import { Platform, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Platform, View, Text, StyleSheet, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { colors, spacing, borderRadius, fontSizes } from '../styles/globalStyles';
 import { formatCurrency } from '../utils/formatCurrency';
 
 const shadowStyle = Platform.select({
   web: {
-    boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.08)',
+    boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.16)',
   },
   default: {
     shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
   },
 });
 
@@ -26,43 +26,8 @@ const TransactionItem = ({
   onEdit,
   type = 'expense',
 }) => {
-  const getCategoryIcon = () => {
-    const icons = {
-      // Expense
-      Makanan: '🍔',
-      Minuman: '🥤',
-      Jajan: '🍟',
-      Pakaian: '👕',
-      Obat: '💊',
-      Transportasi: '🚗',
-      Hiburan: '🎮',
-      Kesehatan: '🏥',
-      Belanja: '🛍️',
-      Tagihan: '💡',
-      Pendidikan: '🎓',
-      Asuransi: '🛡️',
-      Pinjaman: '🏦',
-
-      // Income
-      Gaji: '💰',
-      Tabungan: '🏦',
-      Bonus: '🎁',
-      Investasi: '📈',
-      Usaha: '🏪',
-      Hadiah: '🎉',
-      Freelance: '💻',
-      Sewa: '🏠',
-      Dividen: '💹',
-      Pengembalian: '↩️',
-
-      // Default
-      Lainnya: '📝',
-      Other: '📝',
-    };
-    
-    return icons[category] || '📌';
-  };
-
+  const { width } = useWindowDimensions();
+  const isNarrowMobile = width < 380;
   const isExpense = type === 'expense';
   const amountColor = isExpense ? colors.danger : colors.success;
   const amountPrefix = isExpense ? '- ' : '+ ';
@@ -78,24 +43,31 @@ const TransactionItem = ({
   return (
     <TouchableOpacity
       onPress={onPress}
-      activeOpacity={0.7}
-      style={styles.container}
+      activeOpacity={0.85}
+      style={[styles.container, isNarrowMobile && styles.containerNarrow]}
+      accessibilityRole={onPress ? 'button' : 'none'}
+      accessibilityLabel={`${type === 'income' ? 'Pemasukan' : 'Pengeluaran'} ${category}, ${formatCurrency(amount)}`}
     >
       <View style={styles.leftContent}>
-        <Text style={styles.categoryIcon}>{getCategoryIcon()}</Text>
+        <View style={[styles.iconBadge, { backgroundColor: isExpense ? colors.dangerSoft : colors.successSoft }]}>
+          <Text style={styles.categoryIcon}>{String(category || '?').slice(0, 1).toUpperCase()}</Text>
+        </View>
         <View style={styles.textContainer}>
           <Text style={styles.category} numberOfLines={1}>
             {category}
           </Text>
           <Text style={styles.note} numberOfLines={1}>
-            {note || 'No note'}
+            {note || 'Tidak ada catatan'}
           </Text>
           <Text style={styles.date}>{displayDate}</Text>
         </View>
       </View>
 
-      <View style={styles.rightContent}>
-        <Text style={[styles.amount, { color: amountColor }]}>
+      <View style={[styles.rightContent, isNarrowMobile && styles.rightContentNarrow]}>
+        <Text
+          style={[styles.amount, isNarrowMobile && styles.amountNarrow, { color: amountColor }]}
+          numberOfLines={isNarrowMobile ? 2 : 1}
+        >
           {amountPrefix}{formatCurrency(amount)}
         </Text>
         <View style={styles.actionsRow}>
@@ -103,6 +75,9 @@ const TransactionItem = ({
             <TouchableOpacity
               onPress={() => onEdit({ id, category, amount, date, note, type })}
               style={styles.editButton}
+              accessibilityRole="button"
+              accessibilityLabel={`Edit transaksi ${category}`}
+              hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
             >
               <Text style={styles.editText}>Edit</Text>
             </TouchableOpacity>
@@ -111,8 +86,11 @@ const TransactionItem = ({
             <TouchableOpacity
               onPress={() => onDelete(id)}
               style={styles.deleteButton}
+              accessibilityRole="button"
+              accessibilityLabel={`Hapus transaksi ${category}`}
+              hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
             >
-              <Text style={styles.deleteText}>✕</Text>
+              <Text style={styles.deleteText}>Hapus</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -125,73 +103,114 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: colors.white,
-    borderRadius: borderRadius.lg,
+    alignItems: 'flex-start',
+    backgroundColor: colors.card,
+    borderRadius: borderRadius['2xl'],
     padding: spacing.md,
     marginVertical: spacing.sm,
     ...shadowStyle,
-    elevation: 2,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: colors.border,
+    minHeight: 76,
+  },
+  containerNarrow: {
+    flexDirection: 'column',
+    gap: spacing.md,
   },
   leftContent: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    minWidth: 0,
+  },
+  iconBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
   },
   categoryIcon: {
-    fontSize: fontSizes['2xl'],
-    marginRight: spacing.md,
+    fontSize: fontSizes.base,
+    fontWeight: '800',
+    color: colors.white,
   },
   textContainer: {
     flex: 1,
+    minWidth: 0,
   },
   category: {
     fontSize: fontSizes.base,
-    fontWeight: '600',
-    color: colors.dark,
+    fontWeight: '800',
+    color: colors.white,
     marginBottom: spacing.xs,
   },
   note: {
     fontSize: fontSizes.sm,
-    color: colors.darkGray,
+    color: colors.muted,
     marginBottom: spacing.xs,
   },
   date: {
     fontSize: fontSizes.xs,
-    color: colors.darkGray, // Changed from lightGray for better contrast (WCAG AA: ~5.7:1)
+    color: colors.muted,
   },
   rightContent: {
     alignItems: 'flex-end',
     marginLeft: spacing.md,
+    maxWidth: '42%',
+  },
+  rightContentNarrow: {
+    width: '100%',
+    maxWidth: '100%',
+    marginLeft: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   actionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: spacing.xs,
   },
   editButton: {
-    backgroundColor: colors.light,
-    borderRadius: borderRadius.sm,
-    paddingHorizontal: spacing.sm,
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: borderRadius.full,
+    paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
+    minHeight: 30,
+    justifyContent: 'center',
   },
   editText: {
     fontSize: fontSizes.xs,
     color: colors.primary,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   amount: {
-    fontSize: fontSizes.base,
-    fontWeight: '700',
+    fontSize: fontSizes.sm,
+    fontWeight: '800',
     marginBottom: spacing.xs,
+    textAlign: 'right',
+  },
+  amountNarrow: {
+    flex: 1,
+    marginBottom: 0,
+    textAlign: 'left',
   },
   deleteButton: {
-    padding: spacing.sm,
+    minHeight: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: borderRadius.full,
+    paddingHorizontal: spacing.sm,
+    backgroundColor: colors.dangerSoft,
   },
   deleteText: {
-    fontSize: fontSizes.lg,
+    fontSize: fontSizes.xs,
     color: colors.danger,
-    fontWeight: '700',
+    fontWeight: '800',
   },
 });
 

@@ -8,12 +8,10 @@
     },
     "ios": {
       "bundleIdentifier": "com.nataartha.app",
-      "googleServicesFile": "GoogleService-Info.plist"
-    },
-    "version": "1.0.0",
-    "ios": {
+      "googleServicesFile": "GoogleService-Info.plist",
       "supportsTablet": true
     },
+    "version": "1.0.0",
     "platforms": [
       "ios",
       "android",
