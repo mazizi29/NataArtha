@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "NataArtha",
+    "slug": "nataartha",
+    "android": {
+      "package": "com.nataartha.app",
+      "googleServicesFile": "google-services.json"
+    },
+    "ios": {
+      "bundleIdentifier": "com.nataartha.app",
+      "googleServicesFile": "GoogleService-Info.plist"
+    },
+    "version": "1.0.0",
+    "ios": {
+      "supportsTablet": true
+    },
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "plugins": [
+      "@react-native-community/datetimepicker"
+    ]
+  }
+}
