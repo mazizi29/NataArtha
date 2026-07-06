@@ -15,6 +15,8 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import * as api from '../services/api';
+import BackgroundGrid from '../components/BackgroundGrid';
+import AppIcon from '../components/AppIcon';
 import TransactionItem from '../components/TransactionItem';
 import { colors, spacing, fontSizes, borderRadius } from '../styles/globalStyles';
 import { showConfirm, showToast } from '../utils/alertHelper';
@@ -184,7 +186,7 @@ const TransactionHistoryScreen = ({ navigation }) => {
 
       <View style={styles.filterCard}>
         <View style={[styles.searchBox, isMobile && styles.searchBoxMobile]}>
-          <Text style={styles.searchIcon}>Cari</Text>
+          <AppIcon name="search" size={18} color={colors.primary} />
           <TextInput
             value={search}
             onChangeText={setSearch}
@@ -200,7 +202,7 @@ const TransactionHistoryScreen = ({ navigation }) => {
               accessibilityRole="button"
               accessibilityLabel="Bersihkan pencarian"
             >
-              <Text style={styles.clearSearchText}>x</Text>
+              <AppIcon name="close" size={16} color={colors.muted} />
             </TouchableOpacity>
           ) : null}
         </View>
@@ -265,6 +267,11 @@ const TransactionHistoryScreen = ({ navigation }) => {
           style={[styles.refreshChip, isMobile && styles.refreshChipMobile]}
           disabled={refreshing || loading}
         >
+          <AppIcon
+            name="refresh"
+            size={15}
+            color={refreshing || loading ? colors.muted : colors.primary}
+          />
           <Text style={styles.refreshChipText}>{refreshing || loading ? 'Memuat...' : 'Refresh'}</Text>
         </TouchableOpacity>
       </View>
@@ -273,6 +280,7 @@ const TransactionHistoryScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <BackgroundGrid />
       {loading && page === 1 ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -415,6 +423,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceAlt,
     minHeight: 38,
     justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.xs,
   },
 
   refreshChipMobile: {
@@ -490,12 +501,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
 
-  searchIcon: {
-    color: colors.primary,
-    fontSize: fontSizes.xs,
-    fontWeight: '800',
-  },
-
   searchInput: {
     flex: 1,
     color: colors.white,
@@ -510,12 +515,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.card,
-  },
-
-  clearSearchText: {
-    color: colors.muted,
-    fontSize: fontSizes.base,
-    fontWeight: '800',
   },
 
   segmentedControl: {

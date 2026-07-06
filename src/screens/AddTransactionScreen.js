@@ -16,6 +16,8 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import BackgroundGrid from '../components/BackgroundGrid';
+import AppIcon from '../components/AppIcon';
 import InputField from '../components/InputField';
 import ButtonPrimary from '../components/ButtonPrimary';
 import * as api from '../services/api';
@@ -216,15 +218,16 @@ const AddTransactionScreen = ({ navigation, route }) => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
+      <BackgroundGrid />
       <ScrollView
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={[styles.scrollContent, isCompactMobile && styles.scrollContentCompact]}
       >
         <View style={[styles.heroCard, isMobile && styles.heroCardMobile]}>
-          <View>
+          <View style={styles.heroTextBlock}>
             <Text style={styles.heroEyebrow}>{isEditMode ? 'Edit' : 'Transaksi Baru'}</Text>
-            <Text style={styles.heroTitle}>
+            <Text style={styles.heroTitle} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.78}>
               {isEditMode ? 'Perbarui detail transaksi' : 'Catat transaksi dengan rapi'}
             </Text>
             <Text style={styles.heroSubtitle}>
@@ -336,7 +339,10 @@ const AddTransactionScreen = ({ navigation, route }) => {
             >
               {category || 'Pilih kategori'}
             </Text>
+            <View style={styles.pickerAction}>
+              <AppIcon name="tag" size={16} color={colors.primary} />
               <Text style={styles.categoryPickerArrow}>Pilih</Text>
+            </View>
           </TouchableOpacity>
           {errors.category && (
             <Text style={styles.errorText}>{errors.category}</Text>
@@ -351,8 +357,11 @@ const AddTransactionScreen = ({ navigation, route }) => {
               accessibilityRole="button"
               accessibilityLabel="Pilih tanggal transaksi"
             >
-              <Text style={styles.categoryPickerText}>{displayDate}</Text>
-              <Text style={styles.categoryPickerArrow}>Pilih</Text>
+              <Text style={styles.categoryPickerText} numberOfLines={2}>{displayDate}</Text>
+              <View style={styles.pickerAction}>
+                <AppIcon name="calendar" size={16} color={colors.primary} />
+                <Text style={styles.categoryPickerArrow}>Pilih</Text>
+              </View>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
@@ -362,7 +371,8 @@ const AddTransactionScreen = ({ navigation, route }) => {
               accessibilityRole="button"
               accessibilityLabel="Pilih tanggal transaksi"
             >
-              <Text style={styles.categoryPickerText}>{displayDate}</Text>
+              <Text style={styles.categoryPickerText} numberOfLines={2}>{displayDate}</Text>
+              <AppIcon name="calendar" size={17} color={colors.primary} />
             </TouchableOpacity>
           )}
           {errors.date && (
@@ -403,7 +413,7 @@ const AddTransactionScreen = ({ navigation, route }) => {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Pilih Kategori</Text>
               <TouchableOpacity onPress={() => setShowCategoryModal(false)}>
-                <Text style={styles.modalClose}>x</Text>
+                <AppIcon name="close" size={20} color={colors.muted} />
               </TouchableOpacity>
             </View>
 
@@ -427,7 +437,12 @@ const AddTransactionScreen = ({ navigation, route }) => {
                     <Text style={styles.categoryOptionIconText}>{item.slice(0, 1)}</Text>
                   </View>
                   <Text style={styles.categoryOptionText}>{item}</Text>
-                  {category === item ? <Text style={styles.categoryOptionSelected}>Dipilih</Text> : null}
+                  {category === item ? (
+                    <View style={styles.categorySelectedPill}>
+                      <AppIcon name="chevronRight" size={14} color={colors.primary} />
+                      <Text style={styles.categoryOptionSelected}>Dipilih</Text>
+                    </View>
+                  ) : null}
                 </TouchableOpacity>
               )}
               scrollEnabled={true}
@@ -449,7 +464,7 @@ const AddTransactionScreen = ({ navigation, route }) => {
                 onPress={() => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1, 1))}
                 style={styles.calendarNavButton}
               >
-                <Text style={styles.calendarNavText}>{'<'}</Text>
+                <AppIcon name="chevronLeft" size={20} color={colors.white} />
               </TouchableOpacity>
 
               <Text style={styles.calendarTitle}>{getMonthTitle(calendarMonth)}</Text>
@@ -458,7 +473,7 @@ const AddTransactionScreen = ({ navigation, route }) => {
                 onPress={() => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1))}
                 style={styles.calendarNavButton}
               >
-                <Text style={styles.calendarNavText}>{'>'}</Text>
+                <AppIcon name="chevronRight" size={20} color={colors.white} />
               </TouchableOpacity>
             </View>
 
@@ -546,10 +561,13 @@ const AddTransactionScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    width: '100%',
+    minWidth: 0,
     backgroundColor: colors.background,
   },
 
   scrollContent: {
+    width: '100%',
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
     paddingBottom: spacing.xl,
@@ -573,10 +591,16 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: spacing.md,
+    overflow: 'hidden',
   },
 
   heroCardMobile: {
     flexDirection: 'column',
+  },
+
+  heroTextBlock: {
+    flex: 1,
+    minWidth: 0,
   },
 
   heroEyebrow: {
@@ -592,12 +616,14 @@ const styles = StyleSheet.create({
     fontSize: fontSizes['2xl'],
     fontWeight: '800',
     marginBottom: spacing.xs,
+    maxWidth: '100%',
   },
 
   heroSubtitle: {
     color: colors.muted,
     fontSize: fontSizes.sm,
     lineHeight: 20,
+    flexShrink: 1,
   },
 
   heroStatusPill: {
@@ -605,6 +631,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     flexShrink: 0,
+    maxWidth: '100%',
   },
 
   heroStatusIncome: {
@@ -618,6 +645,7 @@ const styles = StyleSheet.create({
   heroStatusText: {
     fontSize: fontSizes.xs,
     fontWeight: '800',
+    textAlign: 'center',
   },
 
   heroStatusTextIncome: {
@@ -635,6 +663,7 @@ const styles = StyleSheet.create({
     maxWidth: 560,
     alignSelf: 'center',
     marginTop: spacing.md,
+    minWidth: 0,
   },
 
   typeSelectorCompact: {
@@ -643,6 +672,7 @@ const styles = StyleSheet.create({
 
   typeButton: {
     flex: 1,
+    minWidth: 0,
     paddingVertical: spacing.md + 2,
     paddingHorizontal: spacing.lg,
     borderRadius: borderRadius.full,
@@ -675,6 +705,7 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.base,
     fontWeight: '600',
     color: colors.muted,
+    textAlign: 'center',
   },
 
   typeButtonTextActive: {
@@ -684,6 +715,7 @@ const styles = StyleSheet.create({
   form: {
     width: '100%',
     maxWidth: 560,
+    minWidth: 0,
     alignSelf: 'center',
     marginTop: spacing.md,
     backgroundColor: colors.card,
@@ -713,6 +745,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     backgroundColor: colors.surfaceAlt,
     minHeight: 56,
+    minWidth: 0,
   },
 
   rpLabel: {
@@ -724,12 +757,17 @@ const styles = StyleSheet.create({
 
   amountInput: {
     flex: 1,
+    minWidth: 0,
     fontSize: fontSizes.base,
     color: colors.white,
     paddingVertical: spacing.md,
   },
 
   datePicker: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: borderRadius.xl,
@@ -738,7 +776,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceAlt,
     marginBottom: spacing.md,
     minHeight: 56,
-    justifyContent: 'center',
   },
 
   datePickerInput: {
@@ -796,12 +833,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.surfaceAlt,
-  },
-
-  calendarNavText: {
-    fontSize: fontSizes['2xl'],
-    color: colors.white,
-    lineHeight: 40,
   },
 
   calendarTitle: {
@@ -911,6 +942,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceAlt,
     marginBottom: spacing.md,
     minHeight: 56,
+    minWidth: 0,
+    gap: spacing.sm,
   },
 
   categoryPickerError: {
@@ -921,6 +954,7 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.base,
     color: colors.white,
     flex: 1,
+    minWidth: 0,
     paddingRight: spacing.sm,
   },
 
@@ -931,6 +965,15 @@ const styles = StyleSheet.create({
   categoryPickerArrow: {
     fontSize: fontSizes.sm,
     color: colors.muted,
+    fontWeight: '700',
+  },
+
+  pickerAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    flexShrink: 0,
+    maxWidth: '42%',
   },
 
   errorText: {
@@ -982,11 +1025,6 @@ const styles = StyleSheet.create({
     color: colors.white,
   },
 
-  modalClose: {
-    fontSize: fontSizes.xl,
-    color: colors.muted,
-  },
-
   categoryOption: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1031,6 +1069,13 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontSize: fontSizes.xs,
     fontWeight: '800',
+  },
+
+  categorySelectedPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    flexShrink: 0,
   },
 });
 

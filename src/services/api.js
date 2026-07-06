@@ -74,20 +74,53 @@ const getPeriodBounds = (params = {}) => {
   return { startDate, endDate, period: params.period || '30d' };
 };
 
+const checkRegisteredEmail = async (email) => {
+  const normalizedEmail = String(email || '').trim();
+  if (!normalizedEmail) return false;
+
+  const candidates = Array.from(
+    new Set([normalizedEmail, normalizedEmail.toLowerCase()])
+  );
+
+  for (const candidate of candidates) {
+    const methods = await fetchSignInMethodsForEmail(auth, candidate);
+    if (methods && methods.length > 0) {
+      return true;
+    }
+
+    const userQuery = query(usersCollection, where('email', '==', candidate));
+    const userSnapshot = await getDocs(userQuery);
+    if (!userSnapshot.empty) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
 const getFriendlyAuthErrorMessage = async (error, email) => {
   const errorCode = error?.code || '';
 
   if (
-    errorCode === 'auth/user-not-found' ||
     errorCode === 'auth/invalid-login-credentials' ||
     errorCode === 'auth/invalid-credential'
   ) {
     try {
-      if (email) {
-        const signInMethods = await fetchSignInMethodsForEmail(auth, email);
-        if (!signInMethods || signInMethods.length === 0) {
-          return 'Akun tidak terdaftar';
-        }
+      const isRegistered = await checkRegisteredEmail(email);
+      if (!isRegistered) {
+        return 'Akun belum terdaftar. Silakan daftar terlebih dahulu';
+      }
+      return 'Password salah';
+    } catch (lookupError) {
+      return 'Email atau password salah';
+    }
+  }
+
+  if (errorCode === 'auth/user-not-found') {
+    try {
+      const isRegistered = await checkRegisteredEmail(email);
+      if (!isRegistered) {
+        return 'Akun belum terdaftar. Silakan daftar terlebih dahulu';
       }
       return 'Password salah';
     } catch (lookupError) {

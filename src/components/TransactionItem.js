@@ -2,6 +2,7 @@ import React from 'react';
 import { Platform, View, Text, StyleSheet, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { colors, spacing, borderRadius, fontSizes } from '../styles/globalStyles';
 import { formatCurrency } from '../utils/formatCurrency';
+import AppIcon from './AppIcon';
 
 const shadowStyle = Platform.select({
   web: {
@@ -79,6 +80,7 @@ const TransactionItem = ({
               accessibilityLabel={`Edit transaksi ${category}`}
               hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
             >
+              <AppIcon name="edit" size={14} color={colors.primary} strokeWidth={2.2} />
               <Text style={styles.editText}>Edit</Text>
             </TouchableOpacity>
           )}
@@ -90,6 +92,7 @@ const TransactionItem = ({
               accessibilityLabel={`Hapus transaksi ${category}`}
               hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
             >
+              <AppIcon name="trash" size={14} color={colors.danger} strokeWidth={2.2} />
               <Text style={styles.deleteText}>Hapus</Text>
             </TouchableOpacity>
           )}
@@ -182,6 +185,9 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
     minHeight: 30,
     justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.xs,
   },
   editText: {
     fontSize: fontSizes.xs,
@@ -206,6 +212,8 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.full,
     paddingHorizontal: spacing.sm,
     backgroundColor: colors.dangerSoft,
+    flexDirection: 'row',
+    gap: spacing.xs,
   },
   deleteText: {
     fontSize: fontSizes.xs,

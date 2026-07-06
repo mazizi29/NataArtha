@@ -28,6 +28,10 @@ import Svg, {
 
 import { useAuth } from '../context/AuthContext';
 import * as api from '../services/api';
+import AddTransactionScreen from './AddTransactionScreen';
+import TransactionHistoryScreen from './TransactionHistoryScreen';
+import BackgroundGrid from '../components/BackgroundGrid';
+import AppIcon from '../components/AppIcon';
 import ButtonPrimary from '../components/ButtonPrimary';
 import { colors, spacing, fontSizes, borderRadius } from '../styles/globalStyles';
 import { formatCurrency } from '../utils/formatCurrency';
@@ -65,9 +69,9 @@ const RANGE_OPTIONS = [
 ];
 
 const NAV_ITEMS = [
-  { id: 'dashboard', label: 'Dashboard' },
-  { id: 'history', label: 'Riwayat' },
-  { id: 'add', label: 'Tambah' },
+  { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
+  { id: 'history', label: 'Riwayat', icon: 'history' },
+  { id: 'add', label: 'Tambah', icon: 'add' },
 ];
 
 const emptyInsights = {
@@ -294,6 +298,7 @@ const DashboardScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [selectedPointIndex, setSelectedPointIndex] = useState(-1);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [activePanel, setActivePanel] = useState(null);
   const chartRevealAnim = useRef(new Animated.Value(0)).current;
   const didMountRef = useRef(false);
   const activeRange = useMemo(
@@ -505,14 +510,35 @@ const DashboardScreen = ({ navigation }) => {
   const handleTopAction = (id) => {
     if (id === 'dashboard') return;
     if (id === 'history') {
-      navigation.navigate('TransactionHistory');
+      setActivePanel('history');
       return;
     }
-    navigation.navigate('AddTransaction');
+    setActivePanel('add');
   };
+
+  const closePanel = useCallback(() => {
+    setActivePanel(null);
+  }, []);
+
+  const panelNavigation = useMemo(
+    () => ({
+      ...navigation,
+      goBack: () => {
+        closePanel();
+        fetchDashboard(activeRange);
+      },
+      navigate: (screenName, params) => {
+        closePanel();
+        navigation.navigate(screenName, params);
+      },
+      setOptions: () => {},
+    }),
+    [activeRange, closePanel, fetchDashboard, navigation]
+  );
 
   return (
     <SafeAreaView style={styles.container}>
+      <BackgroundGrid />
       {!isMobile && (
         <View pointerEvents="box-none" style={styles.desktopShell}>
           <View style={styles.sidebar}>
@@ -541,6 +567,11 @@ const DashboardScreen = ({ navigation }) => {
                     onPress={() => handleTopAction(item.id)}
                     style={[styles.sidebarNavItem, active && styles.sidebarNavItemActive]}
                   >
+                    <AppIcon
+                      name={item.icon}
+                      size={18}
+                      color={active ? colors.primary : colors.mediumGray}
+                    />
                     <Text style={[styles.sidebarNavText, active && styles.sidebarNavTextActive]}>
                       {item.label}
                     </Text>
@@ -551,7 +582,7 @@ const DashboardScreen = ({ navigation }) => {
 
             <View style={styles.sidebarUser}>
               <View style={styles.userAvatar}>
-                <Text style={styles.userAvatarText}>{(state.user?.name || 'M')[0]}</Text>
+                <AppIcon name="user" size={19} color={colors.primary} strokeWidth={2.2} />
               </View>
               {isDesktop && (
                 <View style={{ flex: 1 }}>
@@ -562,6 +593,7 @@ const DashboardScreen = ({ navigation }) => {
             </View>
 
             <TouchableOpacity onPress={handleLogout} style={styles.sidebarLogout}>
+              <AppIcon name="logout" size={17} color={colors.dark} />
               <Text style={styles.sidebarLogoutText}>Logout</Text>
             </TouchableOpacity>
           </View>
@@ -583,10 +615,8 @@ const DashboardScreen = ({ navigation }) => {
               </View>
 
               <View style={styles.topBarActions}>
-                <TouchableOpacity onPress={() => navigation.navigate('TransactionHistory')} style={styles.topBarGhostButton}>
-                  <Text style={styles.topBarGhostButtonText}>Riwayat</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => navigation.navigate('AddTransaction')} style={styles.topBarPrimaryButton}>
+                <TouchableOpacity onPress={() => setActivePanel('add')} style={styles.topBarPrimaryButton}>
+                  <AppIcon name="add" size={18} color="#080B14" strokeWidth={2.4} />
                   <Text style={styles.topBarPrimaryButtonText}>Tambah Transaksi</Text>
                 </TouchableOpacity>
               </View>
@@ -598,7 +628,7 @@ const DashboardScreen = ({ navigation }) => {
       {isMobile && (
         <View style={styles.mobileTopBar}>
           <TouchableOpacity onPress={() => setDrawerOpen(true)} style={styles.mobileMenuButton}>
-            <Text style={styles.mobileMenuButtonText}>Menu</Text>
+            <AppIcon name="menu" size={20} color={colors.dark} />
           </TouchableOpacity>
           <View style={styles.mobileBrandBlock}>
             <Image source={require('../../Aset/Asset 2.png')} style={styles.mobileBrandLogo} resizeMode="contain" />
@@ -607,8 +637,8 @@ const DashboardScreen = ({ navigation }) => {
               <Text style={styles.mobileBrandCaption}>Keuangan Pribadi</Text>
             </View>
           </View>
-          <TouchableOpacity onPress={() => navigation.navigate('AddTransaction')} style={styles.mobileActionButton}>
-            <Text style={styles.mobileActionButtonText}>+</Text>
+          <TouchableOpacity onPress={() => setActivePanel('add')} style={styles.mobileActionButton}>
+            <AppIcon name="add" size={22} color="#080B14" strokeWidth={2.6} />
           </TouchableOpacity>
         </View>
       )}
@@ -620,7 +650,7 @@ const DashboardScreen = ({ navigation }) => {
               <View style={styles.mobileDrawerHeader}>
                 <Text style={styles.mobileDrawerTitle}>Menu</Text>
                 <TouchableOpacity onPress={() => setDrawerOpen(false)}>
-                  <Text style={styles.mobileDrawerClose}>x</Text>
+                  <AppIcon name="close" size={20} color={colors.dark} />
                 </TouchableOpacity>
               </View>
               {NAV_ITEMS.map((item) => (
@@ -632,10 +662,12 @@ const DashboardScreen = ({ navigation }) => {
                   }}
                   style={styles.mobileDrawerItem}
                 >
+                  <AppIcon name={item.icon} size={18} color={colors.primary} />
                   <Text style={styles.mobileDrawerItemText}>{item.label}</Text>
                 </TouchableOpacity>
               ))}
               <TouchableOpacity onPress={handleLogout} style={styles.mobileDrawerLogout}>
+                <AppIcon name="logout" size={18} color="#080B14" />
                 <Text style={styles.mobileDrawerLogoutText}>Logout</Text>
               </TouchableOpacity>
             </View>
@@ -1009,7 +1041,7 @@ const DashboardScreen = ({ navigation }) => {
                 <Text style={styles.sectionTitle}>Transaksi Terbaru</Text>
                 <Text style={styles.sectionCaption}>Entri terakhir yang bisa langsung diedit atau dihapus</Text>
               </View>
-              <TouchableOpacity onPress={() => navigation.navigate('TransactionHistory')}>
+              <TouchableOpacity onPress={() => setActivePanel('history')}>
                 <Text style={styles.seeAllText}>Lihat semua</Text>
               </TouchableOpacity>
             </View>
@@ -1021,7 +1053,12 @@ const DashboardScreen = ({ navigation }) => {
               recentTxs.map((transaction) => (
                 <View key={transaction.id} style={[styles.transactionCard, isMobile && styles.transactionCardMobile]}>
                   <View style={styles.transactionIconWrap}>
-                    <Text style={styles.transactionIcon}>{transaction.type === 'expense' ? '-' : '+'}</Text>
+                    <AppIcon
+                      name={transaction.type === 'expense' ? 'expense' : 'income'}
+                      size={19}
+                      color={transaction.type === 'expense' ? colors.danger : colors.success}
+                      strokeWidth={2.4}
+                    />
                   </View>
                   <View style={styles.transactionMeta}>
                     <Text style={styles.transactionCategory} numberOfLines={1}>{transaction.category}</Text>
@@ -1059,6 +1096,60 @@ const DashboardScreen = ({ navigation }) => {
           ) : null}
         </View>
       )}
+      <Modal
+        transparent
+        animationType={isMobile ? 'slide' : 'fade'}
+        visible={!!activePanel}
+        onRequestClose={closePanel}
+      >
+        <View style={[styles.panelOverlay, isMobile && styles.panelOverlayMobile]}>
+          {!isMobile && (
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={closePanel}
+              style={styles.panelBackdropHitArea}
+              accessibilityRole="button"
+              accessibilityLabel="Tutup panel"
+            />
+          )}
+          <View
+            style={[
+              styles.panelCard,
+              activePanel === 'add' && styles.panelCardForm,
+              isMobile && styles.panelCardMobile,
+              isMobile && activePanel === 'add' && styles.panelCardMobileForm,
+            ]}
+          >
+            {isMobile ? <View style={styles.panelGrabber} /> : null}
+            <View style={styles.panelHeader}>
+              <View style={styles.panelHeaderText}>
+                <Text style={styles.panelEyebrow}>
+                  {isMobile ? 'Bottom Sheet' : 'Dialog'}
+                </Text>
+                <Text style={styles.panelTitle}>
+                  {activePanel === 'history' ? 'Riwayat Transaksi' : 'Tambah Transaksi'}
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={closePanel}
+                style={styles.panelCloseButton}
+                accessibilityRole="button"
+                accessibilityLabel="Tutup"
+              >
+                <AppIcon name="close" size={19} color={colors.dark} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.panelBody}>
+              {activePanel === 'history' ? (
+                <TransactionHistoryScreen navigation={panelNavigation} />
+              ) : activePanel === 'add' ? (
+                <AddTransactionScreen navigation={panelNavigation} route={{ params: {} }} />
+              ) : null}
+            </View>
+          </View>
+        </View>
+      </Modal>
       </View>
     </SafeAreaView>
   );
@@ -1157,7 +1248,9 @@ const styles = StyleSheet.create({
     minHeight: 48,
     borderRadius: borderRadius.xl,
     paddingHorizontal: spacing.md,
-    justifyContent: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
     backgroundColor: 'transparent',
   },
 
@@ -1196,11 +1289,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  userAvatarText: {
-    color: colors.primary,
-    fontWeight: '800',
-  },
-
   sidebarUserName: {
     color: colors.dark,
     fontSize: fontSizes.sm,
@@ -1219,6 +1307,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
   },
 
   sidebarLogoutText: {
@@ -1283,11 +1373,122 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
   },
 
   topBarPrimaryButtonText: {
     color: '#080B14',
     fontWeight: '800',
+  },
+
+  panelOverlay: {
+    flex: 1,
+    backgroundColor: colors.overlay,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.lg,
+  },
+
+  panelOverlayMobile: {
+    justifyContent: 'flex-end',
+    padding: 0,
+  },
+
+  panelBackdropHitArea: {
+    ...StyleSheet.absoluteFillObject,
+  },
+
+  panelCard: {
+    width: '100%',
+    maxWidth: 1120,
+    height: '88%',
+    maxHeight: 820,
+    backgroundColor: colors.background,
+    borderRadius: borderRadius['2xl'],
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: 'hidden',
+    ...shadowMedium,
+    elevation: 8,
+  },
+
+  panelCardForm: {
+    maxWidth: 760,
+    height: '86%',
+  },
+
+  panelCardMobile: {
+    height: '92%',
+    maxHeight: '92%',
+    borderTopLeftRadius: borderRadius['3xl'],
+    borderTopRightRadius: borderRadius['3xl'],
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    borderLeftWidth: 0,
+    borderRightWidth: 0,
+    borderBottomWidth: 0,
+  },
+
+  panelCardMobileForm: {
+    height: '88%',
+  },
+
+  panelGrabber: {
+    width: 42,
+    height: 4,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.borderStrong,
+    alignSelf: 'center',
+    marginTop: spacing.sm,
+  },
+
+  panelHeader: {
+    minHeight: 72,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+    backgroundColor: colors.surface,
+  },
+
+  panelHeaderText: {
+    flex: 1,
+    minWidth: 0,
+  },
+
+  panelEyebrow: {
+    color: colors.muted,
+    fontSize: fontSizes.xs,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    marginBottom: 2,
+  },
+
+  panelTitle: {
+    color: colors.dark,
+    fontSize: fontSizes.lg,
+    fontWeight: '800',
+  },
+
+  panelCloseButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surfaceAlt,
+  },
+
+  panelBody: {
+    flex: 1,
+    minHeight: 0,
+    minWidth: 0,
+    overflow: 'hidden',
   },
 
   mobileTopBar: {
@@ -1310,14 +1511,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  mobileMenuButtonText: {
-    color: colors.dark,
-    fontSize: fontSizes.xs,
-    fontWeight: '800',
-  },
-
   mobileBrandBlock: {
     flex: 1,
+    minWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
@@ -1332,11 +1528,13 @@ const styles = StyleSheet.create({
     color: colors.dark,
     fontSize: fontSizes.base,
     fontWeight: '800',
+    flexShrink: 1,
   },
 
   mobileBrandCaption: {
     color: colors.mediumGray,
     fontSize: fontSizes.xs,
+    flexShrink: 1,
   },
 
   mobileActionButton: {
@@ -1346,13 +1544,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-
-  mobileActionButtonText: {
-    color: '#080B14',
-    fontSize: 22,
-    fontWeight: '800',
-    marginTop: -1,
   },
 
   drawerBackdrop: {
@@ -1393,7 +1584,9 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.xl,
     backgroundColor: colors.card,
     paddingHorizontal: spacing.md,
-    justifyContent: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
     marginBottom: spacing.sm,
   },
 
@@ -1409,6 +1602,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
   },
 
   mobileDrawerLogoutText: {
@@ -1634,6 +1829,7 @@ const styles = StyleSheet.create({
   monthTitleBlock: {
     minWidth: 132,
     paddingHorizontal: spacing.sm,
+    flexShrink: 1,
   },
 
   monthTitleBlockMobile: {
@@ -1890,6 +2086,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.xl,
     marginBottom: 0,
     overflow: 'hidden',
+    minWidth: 0,
   },
 
   breakdownCard: {
@@ -2009,6 +2206,7 @@ const styles = StyleSheet.create({
     marginTop: 0,
     marginBottom: 0,
     flexWrap: 'wrap',
+    flexShrink: 1,
   },
 
   chartLegendRowMobile: {
@@ -2077,6 +2275,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.md,
+    minWidth: 0,
   },
 
   chartPointDetailCardMobile: {
@@ -2110,6 +2309,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'stretch',
     gap: spacing.sm,
+    width: '100%',
   },
 
   chartPointDetailRow: {
@@ -2124,11 +2324,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
     gap: spacing.sm,
+    minHeight: 28,
   },
 
   chartPointDetailLabel: {
     fontSize: fontSizes.sm,
     color: colors.darkGray,
+    flexShrink: 0,
   },
 
   chartPointDetailValue: {
@@ -2137,6 +2339,7 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     minWidth: 0,
     textAlign: 'right',
+    maxWidth: '100%',
   },
 
   simpleChart: {
@@ -2342,6 +2545,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius['2xl'],
     borderWidth: 1,
     borderColor: colors.border,
+    overflow: 'hidden',
   },
 
   recentSectionMobile: {
@@ -2361,6 +2565,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.xl,
     borderWidth: 1,
     borderColor: colors.border,
+    minWidth: 0,
   },
 
   transactionCardMobile: {
@@ -2375,12 +2580,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
-  },
-
-  transactionIcon: {
-    color: colors.primary,
-    fontSize: fontSizes.lg,
-    fontWeight: '800',
   },
 
   transactionMeta: {
@@ -2410,7 +2609,7 @@ const styles = StyleSheet.create({
   transactionAmount: {
     fontSize: fontSizes.base,
     fontWeight: '700',
-    maxWidth: 132,
+    maxWidth: 150,
     flexShrink: 1,
     textAlign: 'right',
   },

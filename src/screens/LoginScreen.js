@@ -3,27 +3,26 @@
 
 import React, { useState } from 'react';
 import {
-  View,
-  ScrollView,
-  Text,
+  ActivityIndicator,
   Image,
-  StyleSheet,
-  TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  Alert,
+  Pressable,
+  ScrollView,
   StatusBar,
+  StyleSheet,
+  Text,
   useWindowDimensions,
+  View,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
-import InputField from '../components/InputField';
-import ButtonPrimary from '../components/ButtonPrimary';
+import AuthInput from '../components/AuthInput';
+import BackgroundGrid from '../components/BackgroundGrid';
 import { colors, spacing, fontSizes, borderRadius } from '../styles/globalStyles';
 
 const LoginScreen = ({ navigation }) => {
   const { login } = useAuth();
   const { width } = useWindowDimensions();
-  const isWideLayout = width >= 960;
   const isCompactMobile = width < 390;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -31,7 +30,6 @@ const LoginScreen = ({ navigation }) => {
   const [errors, setErrors] = useState({});
   const [authError, setAuthError] = useState('');
 
-  // Validasi form
   const validateForm = () => {
     const newErrors = {};
 
@@ -52,22 +50,18 @@ const LoginScreen = ({ navigation }) => {
   };
 
   const handleLogin = async () => {
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setLoading(true);
     setAuthError('');
     try {
-      const result = await login(email, password);
+      const result = await login(email.trim(), password);
 
       if (!result.success) {
-        setAuthError(result.error || 'Terjadi kesalahan');
-        Alert.alert('Login Gagal', result.error || 'Terjadi kesalahan');
+        setAuthError(result.error || 'Login gagal. Periksa kembali email dan password.');
       }
     } catch (error) {
       setAuthError('Terjadi kesalahan saat login');
-      Alert.alert('Error', 'Terjadi kesalahan saat login');
     } finally {
       setLoading(false);
     }
@@ -79,91 +73,97 @@ const LoginScreen = ({ navigation }) => {
       style={styles.container}
     >
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+      <BackgroundGrid />
       <ScrollView
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={[
           styles.scrollContent,
           isCompactMobile && styles.scrollContentCompact,
-          isWideLayout && styles.scrollContentWide,
         ]}
       >
-        <View style={[styles.layout, isWideLayout && styles.layoutWide]}>
-          <View style={[styles.heroColumn, isWideLayout && styles.heroColumnWide]}>
-            <View style={[styles.heroCard, isCompactMobile && styles.heroCardCompact]}>
-              <View style={styles.brandPill}>
-                <Text style={styles.brandPillText}>NataArtha</Text>
-              </View>
-              <View style={styles.header}>
-                <Image
-                  source={require('../../Aset/Asset 1.png')}
-                  style={styles.logo}
-                  resizeMode="contain"
-                />
-                <Text style={styles.title}>Kelola uang dengan ritme yang lebih tenang.</Text>
-                <Text style={styles.subtitle}>
-                  Pemasukan, pengeluaran, dan riwayat transaksi hadir dalam satu tampilan yang cepat dibaca.
-                </Text>
-              </View>
-
-              <View style={styles.featureRow}>
-                <View style={styles.featureChip}>
-                  <Text style={styles.featureChipText}>Realtime</Text>
-                </View>
-                <View style={styles.featureChip}>
-                  <Text style={styles.featureChipText}>Web & mobile</Text>
-                </View>
-                <View style={styles.featureChip}>
-                  <Text style={styles.featureChipText}>Sinkron aman</Text>
-                </View>
-              </View>
+        <View style={styles.authShell}>
+          <View style={styles.brandHeader}>
+            <View style={styles.brandMark}>
+              <Image
+                source={require('../../Aset/Asset 2.png')}
+                style={styles.brandLogo}
+                resizeMode="contain"
+              />
             </View>
+            <Text style={styles.brandName}>NataArtha</Text>
+            <Text style={styles.brandSubtitle}>Masuk ke akun keuangan kamu</Text>
           </View>
-          <View style={[styles.formColumn, isWideLayout && styles.formColumnWide]}>
-            <View style={[styles.loginCard, isCompactMobile && styles.loginCardCompact]}>
-              <View style={styles.formHeader}>
-                <Text style={styles.formTitle}>Masuk ke akun kamu</Text>
-                <Text style={styles.formSubtitle}>Lanjutkan dari perangkat mana pun tanpa kehilangan konteks.</Text>
+
+          <View style={[styles.card, isCompactMobile && styles.cardCompact]}>
+            <AuthInput
+              label="Email"
+              placeholder="Masukkan email"
+              value={email}
+              onChangeText={(value) => {
+                setEmail(value);
+                setAuthError('');
+              }}
+              keyboardType="email-address"
+              textContentType="emailAddress"
+              error={errors.email}
+              editable={!loading}
+              icon="mail"
+            />
+
+            <AuthInput
+              label="Password"
+              placeholder="Masukkan password"
+              value={password}
+              onChangeText={(value) => {
+                setPassword(value);
+                setAuthError('');
+              }}
+              secureTextEntry
+              textContentType="password"
+              error={errors.password}
+              editable={!loading}
+              icon="lock"
+            />
+
+            {authError ? (
+              <View style={styles.errorBanner} accessibilityRole="alert">
+                <Text style={styles.errorBannerText}>{authError}</Text>
               </View>
+            ) : null}
 
-              <View style={styles.form}>
-                <InputField
-                  label="Email"
-                  placeholder="Masukkan email Anda"
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  error={errors.email}
-                  editable={!loading}
-                />
+            <Pressable
+              onPress={handleLogin}
+              disabled={loading}
+              style={({ pressed, hovered }) => [
+                styles.primaryButton,
+                (pressed || hovered) && !loading && styles.primaryButtonActive,
+                loading && styles.primaryButtonDisabled,
+              ]}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: loading, busy: loading }}
+            >
+              {loading ? (
+                <ActivityIndicator color="#080B14" />
+              ) : (
+                <Text style={styles.primaryButtonText}>Masuk</Text>
+              )}
+            </Pressable>
 
-                <InputField
-                  label="Password"
-                  placeholder="Masukkan password Anda"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                  error={errors.password}
-                  editable={!loading}
-                />
+          </View>
 
-                <ButtonPrimary
-                  title="Masuk"
-                  onPress={handleLogin}
-                  loading={loading}
-                  disabled={loading}
-                  fullWidth
-                />
-
-                {authError ? <Text style={styles.authError}>{authError}</Text> : null}
-              </View>
-
-              <View style={styles.footer}>
-                <Text style={styles.footerText}>Belum punya akun? </Text>
-                <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-                  <Text style={styles.linkText}>Daftar di sini</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Belum punya akun? </Text>
+            <Pressable
+              onPress={() => navigation.navigate('Register')}
+              style={({ pressed, hovered }) => [
+                styles.linkHit,
+                (pressed || hovered) && styles.linkHitActive,
+              ]}
+              accessibilityRole="link"
+            >
+              <Text style={styles.linkText}>Daftar sekarang</Text>
+            </Pressable>
           </View>
         </View>
       </ScrollView>
@@ -179,9 +179,10 @@ const styles = StyleSheet.create({
 
   scrollContent: {
     flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.xl,
-    justifyContent: 'center',
   },
 
   scrollContentCompact: {
@@ -189,180 +190,154 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
   },
 
-  scrollContentWide: {
+  authShell: {
+    width: '100%',
+    maxWidth: 530,
     alignItems: 'center',
   },
 
-  layout: {
-    width: '100%',
-    gap: spacing.lg,
+  brandHeader: {
+    alignItems: 'center',
+    marginBottom: spacing.xl,
   },
 
-  layoutWide: {
-    flexDirection: 'row',
-    alignItems: 'stretch',
-    maxWidth: 1180,
-  },
-
-  heroColumn: {
-    width: '100%',
-  },
-
-  heroColumnWide: {
-    flex: 1.08,
-  },
-
-  formColumn: {
-    width: '100%',
-  },
-
-  formColumnWide: {
-    flex: 0.92,
+  brandMark: {
+    width: 76,
+    height: 76,
+    borderRadius: 22,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
     justifyContent: 'center',
-  },
-
-  heroCard: {
-    backgroundColor: colors.card,
-    borderRadius: borderRadius['3xl'],
-    padding: spacing.lg,
     marginBottom: spacing.lg,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.border,
-    minHeight: 320,
-    justifyContent: 'space-between',
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 18px 44px rgba(201,168,76,0.20)',
+      },
+      default: {
+        elevation: 8,
+      },
+    }),
   },
 
-  heroCardCompact: {
-    minHeight: 0,
-    padding: spacing.md,
-    borderRadius: borderRadius['2xl'],
+  brandLogo: {
+    width: 34,
+    height: 34,
   },
 
-  brandPill: {
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(201, 168, 76, 0.12)',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.full,
-    marginBottom: spacing.md,
-  },
-
-  brandPillText: {
-    color: colors.primary,
-    fontSize: fontSizes.xs,
-    fontWeight: '800',
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
-  },
-
-  loginCard: {
-    backgroundColor: colors.card,
-    borderRadius: borderRadius['3xl'],
-    paddingVertical: spacing.xl,
-    paddingHorizontal: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-
-  loginCardCompact: {
-    paddingVertical: spacing.lg,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius['2xl'],
-  },
-
-  logo: {
-    width: 72,
-    height: 72,
-    marginBottom: spacing.md,
-  },
-
-  header: {
-    alignItems: 'flex-start',
-    marginBottom: spacing.md,
-  },
-
-  title: {
-    fontSize: fontSizes['2xl'],
-    fontWeight: '800',
+  brandName: {
     color: colors.white,
-    marginBottom: spacing.sm,
-    lineHeight: 34,
+    fontSize: 36,
+    fontWeight: '900',
+    letterSpacing: 0,
+    textAlign: 'center',
   },
 
-  subtitle: {
-    fontSize: fontSizes.base,
-    color: colors.muted,
-    textAlign: 'left',
-    lineHeight: 22,
+  brandSubtitle: {
+    color: '#A8B5D6',
+    fontSize: fontSizes.lg,
+    marginTop: spacing.sm,
+    textAlign: 'center',
   },
 
-  featureRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    marginTop: spacing.md,
+  card: {
+    width: '100%',
+    backgroundColor: 'rgba(14,20,32,0.94)',
+    borderRadius: borderRadius['2xl'],
+    borderWidth: 1,
+    borderColor: 'rgba(201,168,76,0.16)',
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.xl,
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 24px 70px rgba(0,0,0,0.32)',
+      },
+      default: {
+        elevation: 8,
+      },
+    }),
   },
 
-  featureChip: {
+  cardCompact: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.lg,
+    borderRadius: borderRadius.xl,
+  },
+
+  errorBanner: {
+    borderWidth: 1,
+    borderColor: 'rgba(255,107,107,0.32)',
+    backgroundColor: colors.dangerSoft,
+    borderRadius: borderRadius.lg,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.surfaceAlt,
-  },
-
-  featureChipText: {
-    color: colors.primary,
-    fontSize: fontSizes.xs,
-    fontWeight: '700',
-  },
-
-  form: {
-    marginTop: spacing.md,
-  },
-
-  formHeader: {
     marginBottom: spacing.md,
   },
 
-  formTitle: {
-    fontSize: fontSizes.xl,
-    fontWeight: '800',
-    color: colors.white,
-    marginBottom: spacing.xs,
+  errorBannerText: {
+    color: colors.danger,
+    fontSize: fontSizes.sm,
+    fontWeight: '700',
+    textAlign: 'center',
   },
 
-  formSubtitle: {
-    fontSize: fontSizes.sm,
-    color: colors.muted,
-    lineHeight: 20,
+  primaryButton: {
+    minHeight: 68,
+    borderRadius: 20,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: spacing.sm,
+    ...Platform.select({
+      web: {
+        transitionDuration: '160ms',
+        boxShadow: '0px 18px 44px rgba(201,168,76,0.22)',
+      },
+      default: {
+        elevation: 5,
+      },
+    }),
+  },
+
+  primaryButtonActive: {
+    transform: [{ translateY: -1 }],
+    backgroundColor: '#E4C763',
+  },
+
+  primaryButtonDisabled: {
+    opacity: 0.62,
+  },
+
+  primaryButtonText: {
+    color: '#080B14',
+    fontSize: fontSizes.lg,
+    fontWeight: '900',
   },
 
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: spacing.md,
     flexWrap: 'wrap',
+    marginTop: spacing.xl,
   },
 
   footerText: {
-    fontSize: fontSizes.sm,
-    color: colors.muted,
+    color: '#A8B5D6',
+    fontSize: fontSizes.base,
+  },
+
+  linkHit: {
+    borderRadius: borderRadius.md,
+  },
+
+  linkHitActive: {
+    backgroundColor: 'rgba(201,168,76,0.08)',
   },
 
   linkText: {
-    fontSize: fontSizes.sm,
     color: colors.primary,
-    fontWeight: '600',
-  },
-
-  authError: {
-    marginTop: spacing.sm,
-    color: colors.danger,
-    fontSize: fontSizes.sm,
-    fontWeight: '600',
-    textAlign: 'center',
+    fontSize: fontSizes.base,
+    fontWeight: '900',
   },
 });
 
