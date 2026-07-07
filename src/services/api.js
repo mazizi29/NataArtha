@@ -24,6 +24,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const usersCollection = collection(db, 'users');
 const transactionsCollection = collection(db, 'transactions');
+const categoriesCollection = collection(db, 'categories');
 const PENDING_KEY = '@nataartha:pending_transactions';
 
 const PERIOD_PRESETS = {
@@ -321,7 +322,9 @@ const buildCategoryBreakdown = (transactions) => {
     if (amount <= 0) return;
 
     const category = transaction.category || 'Lainnya';
-    const current = categoryTotals.get(category) || { category, income: 0, expense: 0, total: 0 };
+    const iconName = transaction.iconName || null;
+    const current = categoryTotals.get(category) || { category, iconName, income: 0, expense: 0, total: 0 };
+    if (!current.iconName && iconName) current.iconName = iconName;
 
     if (transaction.type === 'income') {
       current.income += amount;
@@ -453,6 +456,35 @@ export const registerUser = async (name, email, password) => {
   }
 };
 
+export const getCustomCategories = async () => {
+  try {
+    const currentUser = ensureAuthUser();
+    const q = query(categoriesCollection, where('userId', '==', currentUser.uid));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+  } catch (error) {
+    console.error('getCustomCategories error:', error);
+    return [];
+  }
+};
+
+export const addCustomCategory = async (data) => {
+  try {
+    const currentUser = ensureAuthUser();
+    const payload = {
+      name: data.name,
+      type: data.type,
+      iconName: data.iconName || null,
+      userId: currentUser.uid,
+      createdAt: serverTimestamp(),
+    };
+    const ref = await addDoc(categoriesCollection, payload);
+    return { id: ref.id, ...payload };
+  } catch (error) {
+    throw new Error(error?.message || 'Gagal menyimpan kategori');
+  }
+};
+
 export const getTransactions = async (params = {}) => {
   try {
     const currentUser = ensureAuthUser();
@@ -488,6 +520,7 @@ export const addTransaction = async (data) => {
     const payload = {
       amount: Number(data.amount) || 0,
       category: data.category || 'Other',
+      iconName: data.iconName || null,
       date: data.date,
       note: data.note || '',
       type: data.type || 'expense',
@@ -506,6 +539,7 @@ export const addTransaction = async (data) => {
         id: `local-${Date.now()}`,
         amount: Number(data.amount) || 0,
         category: data.category || 'Other',
+        iconName: data.iconName || null,
         date: data.date,
         note: data.note || '',
         type: data.type || 'expense',
@@ -544,6 +578,7 @@ export const flushPendingTransactions = async () => {
       const payload = {
         amount: Number(item.amount) || 0,
         category: item.category || 'Other',
+        iconName: item.iconName || null,
         date: item.date,
         note: item.note || '',
         type: item.type || 'expense',
@@ -614,9 +649,9 @@ export const deleteTransaction = async (id) => {
   }
 };
 
-export const getSummary = async () => {
+export const getSummary = async (params = {}) => {
   try {
-    const bounds = getPeriodBounds();
+    const bounds = getPeriodBounds(params);
     const currentUser = ensureAuthUser();
     const q = query(transactionsCollection, where('userId', '==', currentUser.uid));
     const snapshot = await getDocs(q);
@@ -641,16 +676,27 @@ export const getDashboardInsights = async (params = {}) => {
     const q = query(transactionsCollection, where('userId', '==', currentUser.uid));
     const snapshot = await getDocs(q);
 
-    const rows = sortTransactions(
-      snapshot.docs
-        .map((item) => ({
-          id: item.id,
-          ...item.data(),
-        }))
-        .filter((item) => isWithinBounds(item, bounds))
-    );
+    const allRows = snapshot.docs.map((item) => ({
+      id: item.id,
+      ...item.data(),
+    }));
 
-    return buildInsights(rows, bounds);
+    const rows = sortTransactions(allRows.filter((item) => isWithinBounds(item, bounds)));
+    const insights = buildInsights(rows, bounds);
+
+    if (bounds.startDate && bounds.endDate) {
+      const diffMs = bounds.endDate.getTime() - bounds.startDate.getTime();
+      const oneDayMs = 24 * 60 * 60 * 1000;
+      const prevEndDate = new Date(bounds.startDate.getTime() - oneDayMs);
+      const prevStartDate = new Date(prevEndDate.getTime() - diffMs);
+      const prevBounds = { startDate: prevStartDate, endDate: prevEndDate };
+      const prevRows = allRows.filter((item) => isWithinBounds(item, prevBounds));
+      insights.previousSummary = computeSummary(prevRows);
+    } else {
+      insights.previousSummary = null;
+    }
+
+    return insights;
   } catch (error) {
     throw new Error(error?.message || 'Gagal mengambil insight dashboard');
   }

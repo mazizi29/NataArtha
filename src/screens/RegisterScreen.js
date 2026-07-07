@@ -16,7 +16,7 @@ import {
   View,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
-import AuthInput from '../components/AuthInput';
+import CustomInput from '../components/CustomInput';
 import BackgroundGrid from '../components/BackgroundGrid';
 import { colors, spacing, fontSizes, borderRadius } from '../styles/globalStyles';
 
@@ -100,7 +100,7 @@ const RegisterScreen = ({ navigation }) => {
           <View style={styles.brandHeader}>
             <View style={styles.brandMark}>
               <Image
-                source={require('../../Aset/Asset 2.png')}
+                source={require('../../assets/Asset 2.png')}
                 style={styles.brandLogo}
                 resizeMode="contain"
               />
@@ -110,24 +110,24 @@ const RegisterScreen = ({ navigation }) => {
           </View>
 
           <View style={[styles.card, isCompactMobile && styles.cardCompact]}>
-            <AuthInput
+            <CustomInput
               label="Nama Lengkap"
-              placeholder="Masukkan nama lengkap kamu"
+              placeholder="Masukkan nama Anda"
               value={name}
               onChangeText={(value) => {
                 setName(value);
                 setAuthError('');
               }}
-              autoCapitalize="words"
-              textContentType="name"
               error={errors.name}
               editable={!loading}
               icon="user"
+              autoCapitalize="words"
+              textContentType="name"
             />
 
-            <AuthInput
+            <CustomInput
               label="Email"
-              placeholder="Masukkan email kamu"
+              placeholder="Masukkan email"
               value={email}
               onChangeText={(value) => {
                 setEmail(value);
@@ -140,9 +140,9 @@ const RegisterScreen = ({ navigation }) => {
               icon="mail"
             />
 
-            <AuthInput
+            <CustomInput
               label="Password"
-              placeholder="Minimal 6 karakter"
+              placeholder="Buat password (min 6 karakter)"
               value={password}
               onChangeText={(value) => {
                 setPassword(value);
@@ -155,7 +155,7 @@ const RegisterScreen = ({ navigation }) => {
               icon="lock"
             />
 
-            <AuthInput
+            <CustomInput
               label="Konfirmasi Password"
               placeholder="Ulangi password"
               value={confirmPassword}

@@ -58,6 +58,7 @@ const iconPaths = {
   chevronRight: ['M9 18l6-6-6-6'],
   chevronLeft: ['M15 18l-6-6 6-6'],
   close: ['M6 6l12 12', 'M18 6 6 18'],
+  filter: ['M22 3H2l8 9.46V19l4 2v-8.54L22 3z'],
 };
 
 const AppIcon = ({

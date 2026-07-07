@@ -3,6 +3,7 @@ import { Platform, View, Text, StyleSheet, TouchableOpacity, useWindowDimensions
 import { colors, spacing, borderRadius, fontSizes } from '../styles/globalStyles';
 import { formatCurrency } from '../utils/formatCurrency';
 import AppIcon from './AppIcon';
+import CategoryIcon from './CategoryIcon';
 
 const shadowStyle = Platform.select({
   web: {
@@ -19,6 +20,7 @@ const shadowStyle = Platform.select({
 const TransactionItem = ({
   id,
   category,
+  iconName,
   amount,
   date,
   note,
@@ -51,7 +53,7 @@ const TransactionItem = ({
     >
       <View style={styles.leftContent}>
         <View style={[styles.iconBadge, { backgroundColor: isExpense ? colors.dangerSoft : colors.successSoft }]}>
-          <Text style={styles.categoryIcon}>{String(category || '?').slice(0, 1).toUpperCase()}</Text>
+          <CategoryIcon category={category} iconName={iconName} size={22} color={isExpense ? colors.danger : colors.success} />
         </View>
         <View style={styles.textContainer}>
           <Text style={styles.category} numberOfLines={1}>
@@ -78,7 +80,7 @@ const TransactionItem = ({
               style={styles.editButton}
               accessibilityRole="button"
               accessibilityLabel={`Edit transaksi ${category}`}
-              hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
+              hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
             >
               <AppIcon name="edit" size={14} color={colors.primary} strokeWidth={2.2} />
               <Text style={styles.editText}>Edit</Text>
@@ -90,7 +92,7 @@ const TransactionItem = ({
               style={styles.deleteButton}
               accessibilityRole="button"
               accessibilityLabel={`Hapus transaksi ${category}`}
-              hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
+              hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
             >
               <AppIcon name="trash" size={14} color={colors.danger} strokeWidth={2.2} />
               <Text style={styles.deleteText}>Hapus</Text>

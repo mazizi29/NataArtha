@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { colors, spacing, borderRadius, fontSizes } from '../styles/globalStyles';
 import AppIcon from './AppIcon';
 
-const AuthInput = ({
+const CustomInput = ({
   label,
   placeholder,
   value,
@@ -15,30 +15,43 @@ const AuthInput = ({
   autoCapitalize = 'none',
   textContentType,
   icon,
+  prefix,
+  multiline = false,
+  numberOfLines = 1,
+  maxLength,
+  style,
 }) => {
   const [focused, setFocused] = useState(false);
   const [visible, setVisible] = useState(false);
   const isSecure = secureTextEntry && !visible;
 
   return (
-    <View style={styles.field}>
-      <Text style={styles.label}>{label}</Text>
+    <View style={[styles.field, style]}>
+      {label && <Text style={styles.label}>{label}</Text>}
       <View
         style={[
           styles.inputShell,
+          multiline && styles.inputShellMultiline,
           focused && styles.inputShellFocused,
           error && styles.inputShellError,
           !editable && styles.inputShellDisabled,
         ]}
       >
-        <View style={styles.inputIcon}>
-          <AppIcon
-            name={icon}
-            size={20}
-            color={focused ? colors.primary : '#93A0B9'}
-            strokeWidth={2}
-          />
-        </View>
+        {icon ? (
+          <View style={styles.inputIcon}>
+            <AppIcon
+              name={icon}
+              size={20}
+              color={focused ? colors.primary : '#93A0B9'}
+              strokeWidth={2}
+            />
+          </View>
+        ) : null}
+        
+        {prefix ? (
+          <Text style={styles.prefix}>{prefix}</Text>
+        ) : null}
+
         <TextInput
           value={value}
           onChangeText={onChangeText}
@@ -49,12 +62,16 @@ const AuthInput = ({
           editable={editable}
           autoCapitalize={autoCapitalize}
           textContentType={textContentType}
+          multiline={multiline}
+          numberOfLines={numberOfLines}
+          maxLength={maxLength}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          style={styles.input}
-          accessibilityLabel={label}
+          style={[styles.input, multiline && styles.multilineInput]}
+          accessibilityLabel={label || placeholder}
           accessibilityState={{ disabled: !editable, invalid: !!error }}
         />
+        
         {secureTextEntry ? (
           <Pressable
             onPress={() => setVisible((current) => !current)}
@@ -105,6 +122,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
   },
 
+  inputShellMultiline: {
+    alignItems: 'flex-start',
+    paddingVertical: spacing.sm,
+  },
+
   inputShellFocused: {
     borderColor: colors.primary,
     backgroundColor: '#172237',
@@ -124,6 +146,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  
+  prefix: {
+    marginRight: spacing.sm,
+    color: colors.primary,
+    fontSize: fontSizes.base,
+    fontWeight: '600',
+  },
 
   input: {
     flex: 1,
@@ -131,6 +160,12 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: fontSizes.base,
     paddingVertical: spacing.md,
+  },
+
+  multilineInput: {
+    minHeight: 112,
+    textAlignVertical: 'top',
+    paddingTop: spacing.md,
   },
 
   visibilityButton: {
@@ -151,7 +186,8 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.xs,
     fontWeight: '700',
     marginTop: spacing.xs,
+    marginLeft: spacing.xs,
   },
 });
 
-export default AuthInput;
+export default CustomInput;

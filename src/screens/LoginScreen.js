@@ -16,7 +16,7 @@ import {
   View,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
-import AuthInput from '../components/AuthInput';
+import CustomInput from '../components/CustomInput';
 import BackgroundGrid from '../components/BackgroundGrid';
 import { colors, spacing, fontSizes, borderRadius } from '../styles/globalStyles';
 
@@ -86,7 +86,7 @@ const LoginScreen = ({ navigation }) => {
           <View style={styles.brandHeader}>
             <View style={styles.brandMark}>
               <Image
-                source={require('../../Aset/Asset 2.png')}
+                source={require('../../assets/Asset 2.png')}
                 style={styles.brandLogo}
                 resizeMode="contain"
               />
@@ -96,7 +96,7 @@ const LoginScreen = ({ navigation }) => {
           </View>
 
           <View style={[styles.card, isCompactMobile && styles.cardCompact]}>
-            <AuthInput
+            <CustomInput
               label="Email"
               placeholder="Masukkan email"
               value={email}
@@ -111,7 +111,7 @@ const LoginScreen = ({ navigation }) => {
               icon="mail"
             />
 
-            <AuthInput
+            <CustomInput
               label="Password"
               placeholder="Masukkan password"
               value={password}

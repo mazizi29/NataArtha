@@ -18,7 +18,8 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import BackgroundGrid from '../components/BackgroundGrid';
 import AppIcon from '../components/AppIcon';
-import InputField from '../components/InputField';
+import CategoryIcon from '../components/CategoryIcon';
+import CustomInput from '../components/CustomInput';
 import ButtonPrimary from '../components/ButtonPrimary';
 import * as api from '../services/api';
 import { colors, spacing, fontSizes, borderRadius } from '../styles/globalStyles';
@@ -111,14 +112,34 @@ const AddTransactionScreen = ({ navigation, route }) => {
   const [showWebCalendar, setShowWebCalendar] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
 
+  const [customCategories, setCustomCategories] = useState([]);
+  const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryIcon, setNewCategoryIcon] = useState('Star');
+  const [savingCategory, setSavingCategory] = useState(false);
+  const [selectedIconName, setSelectedIconName] = useState(null);
+
   React.useEffect(() => {
     if (!isEditMode || !existingTransaction) return;
     setAmount(String(existingTransaction.amount || ''));
     setCategory(existingTransaction.category || '');
+    setSelectedIconName(existingTransaction.iconName || null);
     setDate(existingTransaction.date || toISODate(new Date()));
     setNote(existingTransaction.note || '');
     setType(existingTransaction.type || 'expense');
   }, [isEditMode, existingTransaction]);
+
+  React.useEffect(() => {
+    const fetchCustomCategories = async () => {
+      try {
+        const data = await api.getCustomCategories();
+        setCustomCategories(data);
+      } catch (error) {
+        console.error('Failed to fetch custom categories', error);
+      }
+    };
+    fetchCustomCategories();
+  }, []);
 
   React.useEffect(() => {
     if (showWebCalendar) {
@@ -178,6 +199,7 @@ const AddTransactionScreen = ({ navigation, route }) => {
       const transactionData = {
         amount: parseFloat(amount),
         category,
+        iconName: selectedIconName,
         date,
         note,
         type,
@@ -201,7 +223,10 @@ const AddTransactionScreen = ({ navigation, route }) => {
     }
   };
 
-  const currentCategories = categories[type];
+  const currentCategories = [
+    ...(categories[type] || []).map(name => ({ name, iconName: name, isCustom: false })),
+    ...customCategories.filter(c => c.type === type).map(c => ({ name: c.name, iconName: c.iconName, isCustom: true }))
+  ];
   const calendarDays = buildCalendarDays(calendarMonth, date);
   const parsedSelectedDate = new Date(date);
   const displayDate = Number.isNaN(parsedSelectedDate.getTime())
@@ -263,6 +288,7 @@ const AddTransactionScreen = ({ navigation, route }) => {
             onPress={() => {
               setType('expense');
               setCategory('');
+              setSelectedIconName(null);
             }}
           >
             <Text
@@ -284,6 +310,7 @@ const AddTransactionScreen = ({ navigation, route }) => {
             onPress={() => {
               setType('income');
               setCategory('');
+              setSelectedIconName(null);
             }}
           >
             <Text
@@ -322,7 +349,7 @@ const AddTransactionScreen = ({ navigation, route }) => {
 
           {/* Category Picker */}
           <TouchableOpacity
-            onPress={() => setShowCategoryModal(true)}
+            onPress={() => setShowCategoryModal(!showCategoryModal)}
             style={[
               styles.categoryPicker,
               errors.category && styles.categoryPickerError,
@@ -346,6 +373,125 @@ const AddTransactionScreen = ({ navigation, route }) => {
           </TouchableOpacity>
           {errors.category && (
             <Text style={styles.errorText}>{errors.category}</Text>
+          )}
+
+          {showCategoryModal && (
+            <View style={styles.categoryChipsContainer}>
+              {currentCategories.map((item) => {
+                const isSelected = category === item.name;
+                return (
+                  <TouchableOpacity
+                    key={item.name}
+                    style={[
+                      styles.categoryChip,
+                      isSelected && (type === 'income' ? styles.categoryChipIncomeSelected : styles.categoryChipExpenseSelected)
+                    ]}
+                    onPress={() => {
+                      setCategory(item.name);
+                      setSelectedIconName(item.iconName);
+                      setShowCategoryModal(false);
+                    }}
+                  >
+                    <CategoryIcon 
+                      category={item.name}
+                      iconName={item.iconName}
+                      size={16} 
+                      color={isSelected ? colors.white : colors.primary} 
+                    />
+                    <Text style={[
+                      styles.categoryChipText,
+                      isSelected && styles.categoryChipTextSelected
+                    ]}>
+                      {item.name}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+              <TouchableOpacity
+                style={styles.addCategoryChip}
+                onPress={() => {
+                  setShowCategoryModal(false);
+                  setShowAddCategoryModal(true);
+                }}
+              >
+                <AppIcon name="plus" size={16} color={colors.primary} />
+                <Text style={styles.addCategoryChipText}>Tambah Kategori</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {showAddCategoryModal && (
+            <View style={styles.addCategoryModal}>
+              <Text style={styles.fieldLabel}>Nama Kategori</Text>
+              <TextInput
+                style={styles.addCategoryInput}
+                placeholder="Contoh: Belanja Bulanan"
+                placeholderTextColor={colors.mediumGray}
+                value={newCategoryName}
+                onChangeText={setNewCategoryName}
+                editable={!savingCategory}
+              />
+
+              <Text style={[styles.fieldLabel, { marginTop: spacing.md }]}>Pilih Icon</Text>
+              <View style={styles.iconGrid}>
+                {['Star', 'Heart', 'Smile', 'Zap', 'Camera', 'Gift', 'Lainnya'].map((icon) => (
+                  <TouchableOpacity
+                    key={icon}
+                    style={[
+                      styles.iconSelectBtn,
+                      newCategoryIcon === icon && styles.iconSelectBtnActive
+                    ]}
+                    onPress={() => setNewCategoryIcon(icon)}
+                  >
+                    <CategoryIcon
+                      category="Lainnya"
+                      iconName={icon}
+                      size={24}
+                      color={newCategoryIcon === icon ? colors.white : colors.primary}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <View style={styles.addCategoryActions}>
+                <TouchableOpacity
+                  style={styles.addCategoryBtnCancel}
+                  onPress={() => setShowAddCategoryModal(false)}
+                  disabled={savingCategory}
+                >
+                  <Text style={styles.addCategoryBtnCancelText}>Batal</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.addCategoryBtnSave}
+                  onPress={async () => {
+                    if (!newCategoryName.trim()) {
+                      showToast('Nama kategori tidak boleh kosong', 'error');
+                      return;
+                    }
+                    setSavingCategory(true);
+                    try {
+                      const newCat = await api.addCustomCategory({
+                        name: newCategoryName.trim(),
+                        type,
+                        iconName: newCategoryIcon,
+                      });
+                      setCustomCategories(prev => [...prev, newCat]);
+                      setCategory(newCat.name);
+                      setSelectedIconName(newCat.iconName);
+                      setShowAddCategoryModal(false);
+                      setNewCategoryName('');
+                    } catch (error) {
+                      showToast(error.message, 'error');
+                    } finally {
+                      setSavingCategory(false);
+                    }
+                  }}
+                  disabled={savingCategory}
+                >
+                  <Text style={styles.addCategoryBtnSaveText}>{savingCategory ? 'Menyimpan...' : 'Simpan Kategori'}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           )}
 
           <Text style={styles.fieldLabel}>Tanggal</Text>
@@ -379,7 +525,7 @@ const AddTransactionScreen = ({ navigation, route }) => {
             <Text style={styles.errorText}>{errors.date}</Text>
           )}
 
-          <InputField
+          <CustomInput
             label="Catatan (Opsional)"
             placeholder="Masukkan catatan"
             value={note}
@@ -401,55 +547,7 @@ const AddTransactionScreen = ({ navigation, route }) => {
         </View>
       </ScrollView>
 
-      {/* Category Modal */}
-      <Modal
-        visible={showCategoryModal}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowCategoryModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, isCompactMobile && styles.modalContentCompact]}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Pilih Kategori</Text>
-              <TouchableOpacity onPress={() => setShowCategoryModal(false)}>
-                <AppIcon name="close" size={20} color={colors.muted} />
-              </TouchableOpacity>
-            </View>
-
-            <FlatList
-              data={currentCategories}
-              keyExtractor={(item) => item}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.categoryOption}
-                  onPress={() => {
-                    setCategory(item);
-                    setShowCategoryModal(false);
-                  }}
-                >
-                  <View
-                    style={[
-                      styles.categoryOptionIcon,
-                      type === 'income' ? styles.categoryOptionIconIncome : styles.categoryOptionIconExpense,
-                    ]}
-                  >
-                    <Text style={styles.categoryOptionIconText}>{item.slice(0, 1)}</Text>
-                  </View>
-                  <Text style={styles.categoryOptionText}>{item}</Text>
-                  {category === item ? (
-                    <View style={styles.categorySelectedPill}>
-                      <AppIcon name="chevronRight" size={14} color={colors.primary} />
-                      <Text style={styles.categoryOptionSelected}>Dipilih</Text>
-                    </View>
-                  ) : null}
-                </TouchableOpacity>
-              )}
-              scrollEnabled={true}
-            />
-          </View>
-        </View>
-      </Modal>
+      {/* Modal dihilangkan, menggunakan inline dropdown */}
 
       <Modal
         visible={Platform.OS === 'web' && showWebCalendar}
@@ -1036,6 +1134,45 @@ const styles = StyleSheet.create({
     minHeight: 58,
   },
 
+  categoryChipsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+
+  categoryChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.surfaceAlt,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+
+  categoryChipIncomeSelected: {
+    backgroundColor: colors.success,
+    borderColor: colors.success,
+  },
+
+  categoryChipExpenseSelected: {
+    backgroundColor: colors.danger,
+    borderColor: colors.danger,
+  },
+
+  categoryChipText: {
+    fontSize: fontSizes.sm,
+    fontWeight: '600',
+    color: colors.darkGray,
+  },
+
+  categoryChipTextSelected: {
+    color: colors.white,
+  },
+
   categoryOptionText: {
     flex: 1,
     fontSize: fontSizes.base,
@@ -1076,6 +1213,85 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 2,
     flexShrink: 0,
+  },
+  addCategoryChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.full,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    backgroundColor: 'transparent',
+  },
+  addCategoryChipText: {
+    fontSize: fontSizes.sm,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  addCategoryModal: {
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: borderRadius.xl,
+    padding: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing.md,
+  },
+  addCategoryInput: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    backgroundColor: colors.card,
+    fontSize: fontSizes.base,
+    color: colors.white,
+  },
+  iconGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  iconSelectBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconSelectBtnActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  addCategoryActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: spacing.md,
+  },
+  addCategoryBtnCancel: {
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+  },
+  addCategoryBtnCancelText: {
+    color: colors.muted,
+    fontWeight: '600',
+    fontSize: fontSizes.sm,
+  },
+  addCategoryBtnSave: {
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.md,
+  },
+  addCategoryBtnSaveText: {
+    color: colors.white,
+    fontWeight: '700',
+    fontSize: fontSizes.sm,
   },
 });
 

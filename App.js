@@ -5,6 +5,7 @@ import { ActivityIndicator, Text, TextInput, View } from 'react-native';
 import { useFonts, DMSans_400Regular, DMSans_400Regular_Italic, DMSans_500Medium, DMSans_700Bold } from '@expo-google-fonts/dm-sans';
 import { AuthProvider } from './src/context/AuthContext';
 import AppNavigator from './src/navigation/AppNavigator';
+import GlobalAlert, { globalAlertRef } from './src/components/GlobalAlert';
 import { colors } from './src/styles/globalStyles';
 
 export default function App() {
@@ -39,6 +40,7 @@ export default function App() {
       <AuthProvider>
         <AppNavigator />
       </AuthProvider>
+      <GlobalAlert ref={globalAlertRef} />
     </View>
   );
 }

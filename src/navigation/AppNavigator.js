@@ -96,7 +96,24 @@ const AppNavigator = () => {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer
+      documentTitle={{
+        formatter: (options, route) => {
+          if (!route) return 'NataArtha | Kelola keuanganmu';
+          const title = options?.title ?? route?.name;
+          
+          if (title === 'Dashboard') {
+            return 'NataArtha | Kelola keuanganmu';
+          } else if (title === 'Login') {
+            return 'Masuk | NataArtha';
+          } else if (title === 'Register') {
+            return 'Daftar | NataArtha';
+          }
+          
+          return `${title} | NataArtha`;
+        },
+      }}
+    >
       {isSignedIn ? <AppStack /> : <AuthStack />}
     </NavigationContainer>
   );

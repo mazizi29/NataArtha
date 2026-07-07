@@ -7,7 +7,8 @@
     "start": "npx expo start",
     "start:tunnel": "npm run start:lan",
     "start:lan": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$ip = (Get-NetIPAddress -AddressFamily IPv4 -InterfaceAlias 'Wi-Fi' | Where-Object { $_.IPAddress -notlike '169.254*' -and $_.IPAddress -notlike '127.*' } | Select-Object -First 1 -ExpandProperty IPAddress); $env:REACT_NATIVE_PACKAGER_HOSTNAME = $ip; npx expo start --host lan --port 19011 --clear\"",
-    "web": "npx expo start --web"
+    "web": "npx expo start --web",
+    "build:web": "npx expo export -p web"
   },
   "dependencies": {
     "@expo-google-fonts/dm-sans": "^0.4.2",
@@ -17,12 +18,10 @@
     "@react-navigation/native": "^7.3.4",
     "@react-navigation/native-stack": "^7.3.4",
     "axios": "^1.4.0",
-    "chart.js": "^4.5.1",
     "expo": "~54.0.0",
     "expo-status-bar": "~3.0.9",
     "firebase": "^12.12.1",
     "react": "19.1.0",
-    "react-chartjs-2": "^5.3.1",
     "react-dom": "19.1.0",
     "react-native": "0.81.5",
     "react-native-gesture-handler": "~2.28.0",
@@ -30,9 +29,7 @@
     "react-native-screens": "~4.16.0",
     "react-native-svg": "15.12.1",
     "react-native-web": "^0.21.0",
-    "react-native-worklets": "0.5.1",
-    "recharts": "^3.8.1",
-    "victory-native": "^41.20.3"
+    "react-native-worklets": "0.5.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
@@ -41,7 +38,6 @@
     "@types/react": "~19.1.10",
     "@types/react-native": "~0.71.2",
     "babel-preset-expo": "54.0.10",
-    "pdfkit": "^0.18.0",
     "typescript": "~5.9.2"
   },
   "private": true
