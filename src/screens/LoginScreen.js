@@ -165,6 +165,12 @@ const LoginScreen = ({ navigation }) => {
               <Text style={styles.linkText}>Daftar sekarang</Text>
             </Pressable>
           </View>
+
+          <View style={styles.copyright}>
+            <Text style={styles.copyrightText}>
+              © {new Date().getFullYear()} @layarputih_cs
+            </Text>
+          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -338,6 +344,17 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontSize: fontSizes.base,
     fontWeight: '900',
+  },
+
+  copyright: {
+    marginTop: spacing.xl * 1.5,
+    alignItems: 'center',
+    opacity: 0.5,
+  },
+  
+  copyrightText: {
+    color: '#A8B5D6',
+    fontSize: fontSizes.sm,
   },
 });
 
