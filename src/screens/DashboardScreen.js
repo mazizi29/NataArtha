@@ -927,6 +927,21 @@ const DashboardScreen = ({ navigation }) => {
               contentContainerStyle={[styles.scrollContent, isMobile && styles.scrollContentMobile]}
             >
               <View style={[styles.pageShell, isMobile && styles.pageShellMobile]}>
+                {isMobile && (
+                  <View style={{ marginBottom: spacing.lg, paddingHorizontal: spacing.xs }}>
+                    <Text style={{ fontSize: 13, color: '#A8B5D6', marginBottom: 4, fontWeight: '500' }}>
+                      {new Date().toLocaleDateString('id-ID', {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })}
+                    </Text>
+                    <Text style={{ fontSize: 20, color: colors.white, fontWeight: '800' }}>
+                      Halo, {state.user?.name || 'Mazizi'} 👋
+                    </Text>
+                  </View>
+                )}
                 <View style={[styles.heroCard, isMobile && styles.heroCardMobile]}>
                   <View style={styles.heroTextBlock}>
                     <Text style={styles.heroEyebrow}>Total Saldo</Text>
