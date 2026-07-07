@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ActivityIndicator, View } from 'react-native';
@@ -6,11 +6,23 @@ import { ActivityIndicator, View } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { colors } from '../styles/globalStyles';
 
-import LoginScreen from '../screens/LoginScreen';
-import RegisterScreen from '../screens/RegisterScreen';
-import DashboardScreen from '../screens/DashboardScreen';
-import AddTransactionScreen from '../screens/AddTransactionScreen';
-import TransactionHistoryScreen from '../screens/TransactionHistoryScreen';
+const FallbackLoader = () => (
+  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
+    <ActivityIndicator size="large" color={colors.primary} />
+  </View>
+);
+
+const withSuspense = (Component) => (props) => (
+  <Suspense fallback={<FallbackLoader />}>
+    <Component {...props} />
+  </Suspense>
+);
+
+const LoginScreen = withSuspense(lazy(() => import('../screens/LoginScreen')));
+const RegisterScreen = withSuspense(lazy(() => import('../screens/RegisterScreen')));
+const DashboardScreen = withSuspense(lazy(() => import('../screens/DashboardScreen')));
+const AddTransactionScreen = withSuspense(lazy(() => import('../screens/AddTransactionScreen')));
+const TransactionHistoryScreen = withSuspense(lazy(() => import('../screens/TransactionHistoryScreen')));
   
 const Stack = createNativeStackNavigator();
 
