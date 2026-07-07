@@ -827,6 +827,10 @@ const DashboardScreen = ({ navigation }) => {
               <AppIcon name="logout" size={17} color={colors.dark} />
               <Text style={styles.sidebarLogoutText}>Logout</Text>
             </TouchableOpacity>
+
+            <View style={{ marginTop: 'auto', paddingTop: 24, alignItems: 'center', opacity: 0.5 }}>
+              <Text style={{ fontSize: 11, color: colors.dark, fontWeight: '500' }}>© 2026 @layarputih_cs</Text>
+            </View>
           </View>
 
           <View pointerEvents="box-none" style={styles.mainColumn}>
@@ -898,6 +902,10 @@ const DashboardScreen = ({ navigation }) => {
                 <AppIcon name="logout" size={18} color="#080B14" />
                 <Text style={styles.mobileDrawerLogoutText}>Logout</Text>
               </TouchableOpacity>
+
+              <View style={{ marginTop: 'auto', paddingTop: 24, paddingBottom: 8, alignItems: 'center', opacity: 0.5 }}>
+                <Text style={{ fontSize: 11, color: colors.dark, fontWeight: '500' }}>© 2026 @layarputih_cs</Text>
+              </View>
             </View>
           </TouchableOpacity>
         </Modal>

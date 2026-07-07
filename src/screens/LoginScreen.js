@@ -168,7 +168,7 @@ const LoginScreen = ({ navigation }) => {
 
           <View style={styles.copyright}>
             <Text style={styles.copyrightText}>
-              © {new Date().getFullYear()} @layarputih_cs
+              © 2026 @layarputih_cs
             </Text>
           </View>
         </View>
