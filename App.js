@@ -8,6 +8,8 @@ import AppNavigator from './src/navigation/AppNavigator';
 import GlobalAlert, { globalAlertRef } from './src/components/GlobalAlert';
 import { colors } from './src/styles/globalStyles';
 
+import LoadingScreen from './src/components/LoadingScreen';
+
 export default function App() {
   const [fontsLoaded] = useFonts({
     DMSans_400Regular,
@@ -28,11 +30,7 @@ export default function App() {
   TextInput.defaultProps.style = [{ fontFamily: 'DMSans_400Regular' }, TextInput.defaultProps.style];
 
   if (!fontsLoaded) {
-    return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
+    return <LoadingScreen message="Memuat font & aset..." />;
   }
 
   return (

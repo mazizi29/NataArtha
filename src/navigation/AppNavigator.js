@@ -6,14 +6,10 @@ import { ActivityIndicator, View } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { colors } from '../styles/globalStyles';
 
-const FallbackLoader = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
-    <ActivityIndicator size="large" color={colors.primary} />
-  </View>
-);
+import LoadingScreen from '../components/LoadingScreen';
 
 const withSuspense = (Component) => (props) => (
-  <Suspense fallback={<FallbackLoader />}>
+  <Suspense fallback={<LoadingScreen message="Memuat halaman..." />}>
     <Component {...props} />
   </Suspense>
 );
@@ -100,11 +96,7 @@ const AppNavigator = () => {
   const { isLoading, isSignedIn } = state;
 
   if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
+    return <LoadingScreen message="Menyiapkan data Anda..." />;
   }
 
   return (
