@@ -13,7 +13,7 @@ const useTileAnimation = (delay) => {
       Animated.loop(
         Animated.timing(anim, {
           toValue: 1,
-          duration: 4000,
+          duration: 6000,
           easing: Easing.linear,
           useNativeDriver: true,
         })
@@ -39,7 +39,7 @@ const useLinearAnimation = (delay) => {
   useEffect(() => {
     const timeout = setTimeout(() => {
       Animated.loop(
-        Animated.timing(anim, { toValue: 1, duration: 4000, easing: Easing.linear, useNativeDriver: true })
+        Animated.timing(anim, { toValue: 1, duration: 6000, easing: Easing.linear, useNativeDriver: true })
       ).start();
     }, delay);
     return () => clearTimeout(timeout);
