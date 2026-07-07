@@ -928,7 +928,7 @@ const DashboardScreen = ({ navigation }) => {
             >
               <View style={[styles.pageShell, isMobile && styles.pageShellMobile]}>
                 {isMobile && (
-                  <View style={{ marginBottom: spacing.lg, paddingHorizontal: spacing.xs }}>
+                  <View style={{ marginTop: spacing.md, marginBottom: spacing.lg, paddingHorizontal: spacing.lg }}>
                     <Text style={{ fontSize: 13, color: '#A8B5D6', marginBottom: 4, fontWeight: '500' }}>
                       {new Date().toLocaleDateString('id-ID', {
                         weekday: 'long',
@@ -937,7 +937,11 @@ const DashboardScreen = ({ navigation }) => {
                         year: 'numeric',
                       })}
                     </Text>
-                    <Text style={{ fontSize: 20, color: colors.white, fontWeight: '800' }}>
+                    <Text 
+                      style={{ fontSize: 18, color: colors.white, fontWeight: '600' }}
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                    >
                       Halo, {state.user?.name || 'Mazizi'} 👋
                     </Text>
                   </View>
@@ -960,22 +964,17 @@ const DashboardScreen = ({ navigation }) => {
                       style={{
                         flexDirection: 'row',
                         alignItems: 'center',
-                        backgroundColor: 'rgba(201,168,76,0.15)',
-                        paddingHorizontal: 14,
-                        paddingVertical: 8,
-                        borderRadius: 24,
-                        marginTop: 16,
+                        marginTop: 12,
                         alignSelf: 'flex-start',
-                        borderWidth: 1,
-                        borderColor: 'rgba(201,168,76,0.3)'
+                        opacity: 0.9,
                       }}
                     >
                       <AppIcon name="search" size={14} color={colors.primary} />
-                      <Text style={{ fontSize: 12, color: colors.primary, marginLeft: 8, fontWeight: '700' }}>Cek Total Semua Saldo</Text>
+                      <Text style={{ fontSize: 13, color: colors.primary, marginLeft: 6, fontWeight: '600' }}>Cek Total Semua Saldo</Text>
                     </TouchableOpacity>
                   </View>
-                  <View style={[styles.heroRingWrap, isMobile && styles.heroRingWrapMobile]}>
-                    <Text style={styles.heroRingPercent}>{savingsRate}%</Text>
+                  <View style={[styles.heroRingWrap, isMobile && styles.heroRingWrapMobile, { shadowColor: colors.primary, shadowOpacity: 0.15, shadowRadius: 10, elevation: 5 }]}>
+                    <Text style={[styles.heroRingPercent, { textShadowColor: 'rgba(201,168,76,0.3)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4 }]}>{savingsRate}%</Text>
                     <Text style={styles.heroRingLabel}>tabungan</Text>
                   </View>
                 </View>
