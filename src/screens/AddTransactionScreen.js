@@ -434,7 +434,7 @@ const AddTransactionScreen = ({ navigation, route }) => {
 
               <Text style={[styles.fieldLabel, { marginTop: spacing.md }]}>Pilih Icon</Text>
               <View style={styles.iconGrid}>
-                {['Star', 'Heart', 'Smile', 'Zap', 'Camera', 'Gift', 'Lainnya'].map((icon) => (
+                {['Star', 'Heart', 'Smile', 'Zap', 'Camera', 'Gift', 'Shopping Cart', 'Home', 'Car', 'Coffee', 'Briefcase', 'Monitor', 'Book', 'TrendingUp', 'Lainnya'].map((icon) => (
                   <TouchableOpacity
                     key={icon}
                     style={[
