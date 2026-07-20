@@ -2576,6 +2576,7 @@ const styles = StyleSheet.create({
   breakdownList: {
     marginTop: spacing.md,
     gap: spacing.md,
+    width: '100%',
   },
 
   breakdownItem: {

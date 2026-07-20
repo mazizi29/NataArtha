@@ -318,34 +318,40 @@ const TransactionHistoryScreen = ({ navigation, route }) => {
       </View>
 
       <View style={styles.summaryCard}>
-        <View style={[styles.summaryItem, isMobile && styles.summaryItemMobile]}>
-          <Text style={styles.summaryLabel}>Ditampilkan</Text>
-          <Text style={styles.summaryValue}>{filteredTransactions.length}</Text>
+        <View style={styles.summaryMainRow}>
+          <View style={styles.summaryMainItem}>
+            <Text style={styles.summaryLabel}>Pemasukan</Text>
+            <Text style={[styles.summaryValue, styles.summaryIncome]} numberOfLines={1}>
+              Rp {filteredSummary.income.toLocaleString('id-ID')}
+            </Text>
+          </View>
+          <View style={styles.summaryDivider} />
+          <View style={styles.summaryMainItem}>
+            <Text style={styles.summaryLabel}>Pengeluaran</Text>
+            <Text style={[styles.summaryValue, styles.summaryExpense]} numberOfLines={1}>
+              Rp {filteredSummary.expense.toLocaleString('id-ID')}
+            </Text>
+          </View>
         </View>
-        <View style={[styles.summaryItem, isMobile && styles.summaryItemMobile]}>
-          <Text style={styles.summaryLabel}>Masuk</Text>
-          <Text style={[styles.summaryValue, styles.summaryIncome]} numberOfLines={1}>
-            Rp {filteredSummary.income.toLocaleString('id-ID')}
-          </Text>
+        
+        <View style={styles.summaryFooterRow}>
+          <View style={styles.summaryCountContainer}>
+            <Text style={styles.summaryLabel}>Total Ditampilkan:</Text>
+            <Text style={[styles.summaryValue, styles.summaryCountText]}>{filteredTransactions.length}</Text>
+          </View>
+          <TouchableOpacity
+            onPress={onRefresh}
+            style={styles.refreshChip}
+            disabled={refreshing || loading}
+          >
+            <AppIcon
+              name="refresh"
+              size={14}
+              color={refreshing || loading ? colors.muted : colors.primary}
+            />
+            <Text style={styles.refreshChipText}>{refreshing || loading ? 'Memuat...' : 'Refresh'}</Text>
+          </TouchableOpacity>
         </View>
-        <View style={[styles.summaryItem, isMobile && styles.summaryItemMobile]}>
-          <Text style={styles.summaryLabel}>Keluar</Text>
-          <Text style={[styles.summaryValue, styles.summaryExpense]} numberOfLines={1}>
-            Rp {filteredSummary.expense.toLocaleString('id-ID')}
-          </Text>
-        </View>
-        <TouchableOpacity
-          onPress={onRefresh}
-          style={[styles.refreshChip, isMobile && styles.refreshChipMobile]}
-          disabled={refreshing || loading}
-        >
-          <AppIcon
-            name="refresh"
-            size={15}
-            color={refreshing || loading ? colors.muted : colors.primary}
-          />
-          <Text style={styles.refreshChipText}>{refreshing || loading ? 'Memuat...' : 'Refresh'}</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );
@@ -358,7 +364,13 @@ const TransactionHistoryScreen = ({ navigation, route }) => {
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : (
-        <ScrollView
+        <FlatList
+          data={filteredTransactions}
+          keyExtractor={(item) => item.id ? item.id.toString() : Math.random().toString()}
+          renderItem={renderItem}
+          ListHeaderComponent={headerComponent}
+          ListEmptyComponent={renderEmpty}
+          ListFooterComponent={renderFooter}
           contentContainerStyle={[
             styles.listContent,
             isMobile && styles.listContentMobile,
@@ -371,11 +383,10 @@ const TransactionHistoryScreen = ({ navigation, route }) => {
               tintColor={colors.primary}
             />
           }
-        >
-          {headerComponent}
-          {filteredTransactions.length === 0 ? renderEmpty() : filteredTransactions.map(item => renderItem({ item }))}
-          {renderFooter()}
-        </ScrollView>
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+        />
       )}
 
       {deleteModalVisible && (
@@ -474,24 +485,47 @@ const styles = StyleSheet.create({
   summaryCard: {
     backgroundColor: colors.card,
     borderRadius: borderRadius['2xl'],
-    padding: spacing.md,
+    padding: spacing.lg,
     borderWidth: 1,
     borderColor: colors.border,
+    flexDirection: 'column',
+  },
+
+  summaryMainRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+
+  summaryMainItem: {
+    flex: 1,
+  },
+
+  summaryDivider: {
+    width: 1,
+    height: '100%',
+    backgroundColor: colors.border,
+    marginHorizontal: spacing.md,
+  },
+
+  summaryFooterRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+
+  summaryCountContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing.md,
-    flexWrap: 'wrap',
+    gap: spacing.xs,
   },
 
-  summaryItem: {
-    minWidth: 88,
-  },
-
-  summaryItemMobile: {
-    flexBasis: '46%',
-    flexGrow: 1,
-    minWidth: 0,
+  summaryCountText: {
+    fontSize: fontSizes.sm,
   },
 
   summaryLabel: {
@@ -501,7 +535,7 @@ const styles = StyleSheet.create({
   },
 
   summaryValue: {
-    fontSize: fontSizes.base,
+    fontSize: fontSizes.lg,
     fontWeight: '800',
     color: colors.white,
   },
@@ -515,20 +549,14 @@ const styles = StyleSheet.create({
   },
 
   refreshChip: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
     borderRadius: borderRadius.full,
     backgroundColor: colors.surfaceAlt,
-    minHeight: 38,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
     gap: spacing.xs,
-  },
-
-  refreshChipMobile: {
-    flexGrow: 1,
-    alignItems: 'center',
   },
 
   refreshChipText: {
@@ -777,3 +805,4 @@ const styles = StyleSheet.create({
 });
 
 export default TransactionHistoryScreen;
+
